@@ -1,0 +1,13 @@
+# Ignore Medium article (not for public repo)
+medium-article.md
+
+# Ignore IDE and system files
+.DS_Store
+.vscode/
+.idea/
+
+# Ignore local Kiro settings
+.kiro/settings/
+
+# Keep steering documents
+!.kiro/steering/
