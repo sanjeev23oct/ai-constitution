@@ -1,5 +1,6 @@
-# Ignore Medium article (not for public repo)
+# Ignore Medium articles (not for public repo)
 medium-article.md
+medium-articles/
 
 # Ignore IDE and system files
 .DS_Store
