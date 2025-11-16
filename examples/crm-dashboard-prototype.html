@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard - Prototype</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">CRM Dashboard</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Add Customer
+                    </button>
+                    <button onclick="openContactModal()" class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-address-book mr-2"></i>Contacts
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=3b82f6&color=fff" 
+                             class="w-10 h-10 rounded-full" alt="User">
+                        <span class="text-sm font-medium text-gray-700">John Doe</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+            <!-- Total Revenue -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover-lift">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Total Revenue</span>
+                    <i class="fas fa-dollar-sign text-blue-500 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="totalRevenue">$0</div>
+                <div class="text-sm text-green-600 mt-2">
+                    <i class="fas fa-arrow-up"></i> 12.5% from last month
+                </div>
+            </div>
+
+            <!-- Active Customers -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover-lift">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Active Customers</span>
+                    <i class="fas fa-users text-green-500 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="activeCustomers">0</div>
+                <div class="text-sm text-green-600 mt-2">
+                    <i class="fas fa-arrow-up"></i> 8.2% from last month
+                </div>
+            </div>
+
+            <!-- Deals Closed -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover-lift">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Deals Closed</span>
+                    <i class="fas fa-handshake text-purple-500 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="dealsClosedCount">0</div>
+                <div class="text-sm text-blue-600 mt-2">
+                    <i class="fas fa-arrow-up"></i> 15.3% from last month
+                </div>
+            </div>
+
+            <!-- Avg Deal Size -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover-lift">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Avg Deal Size</span>
+                    <i class="fas fa-chart-bar text-orange-500 text-xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="avgDealSize">$0</div>
+                <div class="text-sm text-green-600 mt-2">
+                    <i class="fas fa-arrow-up"></i> 5.7% from last month
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8 fade-in">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Revenue Trend</h2>
+            <canvas id="revenueChart" height="80"></canvas>
+        </div>
+
+        <!-- Customer List -->
+        <div class="bg-white rounded-lg shadow-md fade-in">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Customers</h2>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchInput"
+                                   placeholder="Search customers..." 
+                                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="at-risk">At Risk</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <button onclick="exportToCSV()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-download mr-2"></i>Export CSV
+                        </button>
+                        <button onclick="exportToExcel()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-file-excel mr-2"></i>Export Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Customer
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tier
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Revenue
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Last Contact
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="customerTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contact Management Modal -->
+    <div id="contactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">Contact Management</h3>
+                    <button onclick="closeContactModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div class="mb-6">
+                    <button onclick="openAddContactForm()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Add Contact
+                    </button>
+                </div>
+
+                <!-- Add Contact Form (Hidden by default) -->
+                <div id="addContactForm" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-4">New Contact</h4>
+                    <form onsubmit="saveContact(event)">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" id="contactFirstName" required
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" id="contactLastName" required
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="contactEmail" required
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                                <input type="tel" id="contactPhone" required
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                                <select id="contactCompany" required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Company</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                <input type="text" id="contactTitle" required
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-4">
+                            <button type="button" onclick="closeAddContactForm()" 
+                                    class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Save Contact
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contacts List -->
+                <div class="bg-white rounded-lg border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="contactTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"></div>
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold">Add New Customer</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="customerForm" onsubmit="saveCustomer(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                        <input type="text" id="companyName" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Acme Corporation">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="email" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="contact@acme.com">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <input type="tel" id="phone" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="(555) 123-4567">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Annual Revenue</label>
+                        <input type="number" id="revenue" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="50000">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeModal()" 
+                                class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Save Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== MOCK DATA ====================
+        
+        /**
+         * BUSINESS RULE: Customer Tier Calculation
+         * - Bronze: < $10,000 annual revenue
+         * - Silver: $10,000 - $50,000 annual revenue
+         * - Gold: $50,000 - $100,000 annual revenue
+         * - Platinum: > $100,000 annual revenue
+         */
+        const mockCustomers = [
+            { id: 1, name: 'Acme Corporation', email: 'contact@acme.com', phone: '(555) 123-4567', status: 'active', totalRevenue: 125000, lastContact: '2024-11-10' },
+            { id: 2, name: 'TechStart Inc', email: 'hello@techstart.com', phone: '(555) 234-5678', status: 'active', totalRevenue: 85000, lastContact: '2024-11-12' },
+            { id: 3, name: 'Global Solutions', email: 'info@globalsol.com', phone: '(555) 345-6789', status: 'at-risk', totalRevenue: 45000, lastContact: '2024-10-28' },
+            { id: 4, name: 'Innovation Labs', email: 'team@innovlabs.com', phone: '(555) 456-7890', status: 'active', totalRevenue: 150000, lastContact: '2024-11-14' },
+            { id: 5, name: 'Digital Dynamics', email: 'contact@digidyn.com', phone: '(555) 567-8901', status: 'active', totalRevenue: 95000, lastContact: '2024-11-11' },
+            { id: 6, name: 'Future Systems', email: 'info@futuresys.com', phone: '(555) 678-9012', status: 'inactive', totalRevenue: 8000, lastContact: '2024-09-15' },
+            { id: 7, name: 'Smart Solutions', email: 'hello@smartsol.com', phone: '(555) 789-0123', status: 'active', totalRevenue: 72000, lastContact: '2024-11-13' },
+            { id: 8, name: 'Cloud Nine Tech', email: 'team@cloudnine.com', phone: '(555) 890-1234', status: 'active', totalRevenue: 110000, lastContact: '2024-11-09' },
+            { id: 9, name: 'Quantum Corp', email: 'info@quantum.com', phone: '(555) 901-2345', status: 'at-risk', totalRevenue: 35000, lastContact: '2024-10-20' },
+            { id: 10, name: 'Nexus Enterprises', email: 'contact@nexus.com', phone: '(555) 012-3456', status: 'active', totalRevenue: 180000, lastContact: '2024-11-15' },
+            { id: 11, name: 'Velocity Inc', email: 'hello@velocity.com', phone: '(555) 123-4568', status: 'active', totalRevenue: 62000, lastContact: '2024-11-08' },
+            { id: 12, name: 'Apex Solutions', email: 'team@apex.com', phone: '(555) 234-5679', status: 'active', totalRevenue: 98000, lastContact: '2024-11-14' },
+            { id: 13, name: 'Zenith Corp', email: 'info@zenith.com', phone: '(555) 345-6780', status: 'inactive', totalRevenue: 5000, lastContact: '2024-08-22' },
+            { id: 14, name: 'Prime Tech', email: 'contact@primetech.com', phone: '(555) 456-7891', status: 'active', totalRevenue: 140000, lastContact: '2024-11-12' },
+            { id: 15, name: 'Elite Systems', email: 'hello@elite.com', phone: '(555) 567-8902', status: 'active', totalRevenue: 88000, lastContact: '2024-11-10' },
+            { id: 16, name: 'Vertex Solutions', email: 'team@vertex.com', phone: '(555) 678-9013', status: 'at-risk', totalRevenue: 28000, lastContact: '2024-10-25' },
+            { id: 17, name: 'Pinnacle Corp', email: 'info@pinnacle.com', phone: '(555) 789-0124', status: 'active', totalRevenue: 165000, lastContact: '2024-11-13' },
+            { id: 18, name: 'Summit Tech', email: 'contact@summit.com', phone: '(555) 890-1235', status: 'active', totalRevenue: 75000, lastContact: '2024-11-11' },
+            { id: 19, name: 'Horizon Inc', email: 'hello@horizon.com', phone: '(555) 901-2346', status: 'active', totalRevenue: 120000, lastContact: '2024-11-14' },
+            { id: 20, name: 'Catalyst Systems', email: 'team@catalyst.com', phone: '(555) 012-3457', status: 'active', totalRevenue: 92000, lastContact: '2024-11-09' }
+        ];
+
+        let customers = [...mockCustomers];
+
+        // Mock Contacts Data
+        const mockContacts = [
+            { id: 1, firstName: 'John', lastName: 'Smith', email: 'john.smith@acme.com', phone: '(555) 111-2222', companyId: 1, title: 'CEO' },
+            { id: 2, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah.j@acme.com', phone: '(555) 111-2223', companyId: 1, title: 'CTO' },
+            { id: 3, firstName: 'Michael', lastName: 'Brown', email: 'mbrown@techstart.com', phone: '(555) 222-3333', companyId: 2, title: 'VP Sales' },
+            { id: 4, firstName: 'Emily', lastName: 'Davis', email: 'emily.d@globalsol.com', phone: '(555) 333-4444', companyId: 3, title: 'Director' },
+            { id: 5, firstName: 'David', lastName: 'Wilson', email: 'dwilson@innovlabs.com', phone: '(555) 444-5555', companyId: 4, title: 'Manager' },
+            { id: 6, firstName: 'Lisa', lastName: 'Anderson', email: 'lisa.a@digidyn.com', phone: '(555) 555-6666', companyId: 5, title: 'VP Marketing' },
+            { id: 7, firstName: 'James', lastName: 'Taylor', email: 'jtaylor@futuresys.com', phone: '(555) 666-7777', companyId: 6, title: 'COO' },
+            { id: 8, firstName: 'Jennifer', lastName: 'Martinez', email: 'jmartinez@smartsol.com', phone: '(555) 777-8888', companyId: 7, title: 'CFO' }
+        ];
+
+        let contacts = [...mockContacts];
+
+        // ==================== UTILITY FUNCTIONS ====================
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function calculateCustomerTier(annualRevenue) {
+            if (annualRevenue < 10000) return { name: 'Bronze', color: 'bg-orange-100 text-orange-800' };
+            if (annualRevenue < 50000) return { name: 'Silver', color: 'bg-gray-100 text-gray-800' };
+            if (annualRevenue < 100000) return { name: 'Gold', color: 'bg-yellow-100 text-yellow-800' };
+            return { name: 'Platinum', color: 'bg-purple-100 text-purple-800' };
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'active': 'bg-green-100 text-green-800',
+                'at-risk': 'bg-yellow-100 text-yellow-800',
+                'inactive': 'bg-red-100 text-red-800'
+            };
+            return badges[status] || badges.active;
+        }
+
+        // ==================== BUSINESS LOGIC ====================
+        
+        function calculateMetrics() {
+            const totalRevenue = customers.reduce((sum, c) => sum + c.totalRevenue, 0);
+            const activeCustomers = customers.filter(c => c.status === 'active').length;
+            const dealsCount = customers.length;
+            const avgDealSize = totalRevenue / dealsCount;
+
+            document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('activeCustomers').textContent = activeCustomers;
+            document.getElementById('dealsClosedCount').textContent = dealsCount;
+            document.getElementById('avgDealSize').textContent = formatCurrency(avgDealSize);
+        }
+
+        // ==================== UI RENDERING ====================
+        
+        function renderCustomerList(customersToRender = customers) {
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+
+            customersToRender.forEach(customer => {
+                const tier = calculateCustomerTier(customer.totalRevenue);
+                const statusBadge = getStatusBadge(customer.status);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(customer.name)}&background=random" 
+                                 class="w-10 h-10 rounded-full mr-3" alt="${customer.name}">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                                <div class="text-sm text-gray-500">${customer.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${tier.color}">
+                            ${tier.name}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusBadge}">
+                            ${customer.status.replace('-', ' ').toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${formatCurrency(customer.totalRevenue)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatDate(customer.lastContact)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="viewCustomer(${customer.id})" 
+                                class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="deleteCustomer(${customer.id})" 
+                                class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [85000, 92000, 78000, 105000, 98000, 125000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatCurrency(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==================== EVENT HANDLERS ====================
+        
+        function filterCustomers(searchTerm, status) {
+            let filtered = customers;
+
+            if (searchTerm) {
+                filtered = filtered.filter(customer => 
+                    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            if (status && status !== 'all') {
+                filtered = filtered.filter(customer => customer.status === status);
+            }
+
+            renderCustomerList(filtered);
+        }
+
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('customerForm').reset();
+        }
+
+        function saveCustomer(event) {
+            event.preventDefault();
+            
+            const newCustomer = {
+                id: customers.length + 1,
+                name: document.getElementById('companyName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                status: 'active',
+                totalRevenue: parseInt(document.getElementById('revenue').value),
+                lastContact: new Date().toISOString().split('T')[0]
+            };
+
+            customers.push(newCustomer);
+            renderCustomerList();
+            calculateMetrics();
+            closeModal();
+            showToast('Customer added successfully!', 'success');
+        }
+
+        function viewCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                alert(`Customer Details:\n\nName: ${customer.name}\nEmail: ${customer.email}\nPhone: ${customer.phone}\nRevenue: ${formatCurrency(customer.totalRevenue)}\nStatus: ${customer.status}`);
+            }
+        }
+
+        function deleteCustomer(id) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                customers = customers.filter(c => c.id !== id);
+                renderCustomerList();
+                calculateMetrics();
+                showToast('Customer deleted successfully!', 'error');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 fade-in ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            }`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // ==================== CONTACT MANAGEMENT ====================
+
+        function openContactModal() {
+            document.getElementById('contactModal').classList.remove('hidden');
+            renderContactList();
+            populateCompanyDropdown();
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.add('hidden');
+            closeAddContactForm();
+        }
+
+        function openAddContactForm() {
+            document.getElementById('addContactForm').classList.remove('hidden');
+        }
+
+        function closeAddContactForm() {
+            document.getElementById('addContactForm').classList.add('hidden');
+            document.querySelector('#addContactForm form').reset();
+        }
+
+        function populateCompanyDropdown() {
+            const select = document.getElementById('contactCompany');
+            select.innerHTML = '<option value="">Select Company</option>';
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
+            });
+        }
+
+        function renderContactList() {
+            const tbody = document.getElementById('contactTableBody');
+            tbody.innerHTML = '';
+
+            contacts.forEach(contact => {
+                const company = customers.find(c => c.id === contact.companyId);
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(contact.firstName + ' ' + contact.lastName)}&background=random" 
+                                 class="w-8 h-8 rounded-full mr-3" alt="${contact.firstName} ${contact.lastName}">
+                            <span class="text-sm font-medium text-gray-900">${contact.firstName} ${contact.lastName}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${contact.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${contact.phone}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${company ? company.name : 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${contact.title}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="editContact(${contact.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteContact(${contact.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function saveContact(event) {
+            event.preventDefault();
+            
+            const newContact = {
+                id: contacts.length + 1,
+                firstName: document.getElementById('contactFirstName').value,
+                lastName: document.getElementById('contactLastName').value,
+                email: document.getElementById('contactEmail').value,
+                phone: document.getElementById('contactPhone').value,
+                companyId: parseInt(document.getElementById('contactCompany').value),
+                title: document.getElementById('contactTitle').value
+            };
+
+            contacts.push(newContact);
+            renderContactList();
+            closeAddContactForm();
+            showToast('Contact added successfully!', 'success');
+        }
+
+        function editContact(id) {
+            const contact = contacts.find(c => c.id === id);
+            if (contact) {
+                alert(`Edit Contact:\n\nName: ${contact.firstName} ${contact.lastName}\nEmail: ${contact.email}\nPhone: ${contact.phone}\nTitle: ${contact.title}\n\n(Edit functionality would open a form in production)`);
+            }
+        }
+
+        function deleteContact(id) {
+            if (confirm('Are you sure you want to delete this contact?')) {
+                contacts = contacts.filter(c => c.id !== id);
+                renderContactList();
+                showToast('Contact deleted successfully!', 'error');
+            }
+        }
+
+        // ==================== EXPORT FUNCTIONALITY ====================
+
+        function exportToCSV() {
+            const headers = ['Company Name', 'Email', 'Phone', 'Tier', 'Status', 'Revenue', 'Last Contact'];
+            const rows = customers.map(customer => {
+                const tier = calculateCustomerTier(customer.totalRevenue);
+                return [
+                    customer.name,
+                    customer.email,
+                    customer.phone,
+                    tier.name,
+                    customer.status,
+                    customer.totalRevenue,
+                    customer.lastContact
+                ];
+            });
+
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            downloadFile(csvContent, 'customers.csv', 'text/csv');
+            showToast('Exported to CSV successfully!', 'success');
+        }
+
+        function exportToExcel() {
+            // Create HTML table for Excel
+            const headers = ['Company Name', 'Email', 'Phone', 'Tier', 'Status', 'Revenue', 'Last Contact'];
+            let htmlContent = '<table><thead><tr>';
+            headers.forEach(header => {
+                htmlContent += `<th>${header}</th>`;
+            });
+            htmlContent += '</tr></thead><tbody>';
+
+            customers.forEach(customer => {
+                const tier = calculateCustomerTier(customer.totalRevenue);
+                htmlContent += '<tr>';
+                htmlContent += `<td>${customer.name}</td>`;
+                htmlContent += `<td>${customer.email}</td>`;
+                htmlContent += `<td>${customer.phone}</td>`;
+                htmlContent += `<td>${tier.name}</td>`;
+                htmlContent += `<td>${customer.status}</td>`;
+                htmlContent += `<td>${customer.totalRevenue}</td>`;
+                htmlContent += `<td>${customer.lastContact}</td>`;
+                htmlContent += '</tr>';
+            });
+
+            htmlContent += '</tbody></table>';
+
+            downloadFile(htmlContent, 'customers.xls', 'application/vnd.ms-excel');
+            showToast('Exported to Excel successfully!', 'success');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ==================== INITIALIZATION ====================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render initial data
+            calculateMetrics();
+            renderCustomerList();
+            renderRevenueChart();
+
+            // Attach event listeners
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const status = document.getElementById('statusFilter').value;
+                filterCustomers(e.target.value, status);
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', (e) => {
+                const searchTerm = document.getElementById('searchInput').value;
+                filterCustomers(searchTerm, e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>
