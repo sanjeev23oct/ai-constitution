@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Infrastructure Training - Interactive Prototype</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .component-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .component-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        .component-card.active {
+            border: 3px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .port {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #374151;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .port:hover {
+            transform: scale(1.2);
+        }
+        
+        .port.available { background: #10b981; }
+        .port.reserved { background: #f59e0b; }
+        .port.in-use { background: #ef4444; }
+        .port.uplink { background: #8b5cf6; }
+        
+        .fiber-cable {
+            stroke: #f59e0b;
+            stroke-width: 3;
+            fill: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .cable-line {
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .cable-cat6 { stroke: #3b82f6; }
+        .cable-fiber { stroke: #f59e0b; }
+        .cable-power { stroke: #ef4444; }
+        
+        .rack-unit {
+            height: 40px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">Network Infrastructure Training</h1>
+                    <p class="text-blue-100 mt-1">Interactive Guide for New Team Members</p>
+                </div>
+                <i class="fas fa-network-wired text-5xl opacity-50"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-1">
+                <button onclick="showTab('overview')" class="tab-btn px-6 py-4 font-medium border-b-2 border-blue-600 text-blue-600">
+                    <i class="fas fa-home mr-2"></i>Overview
+                </button>
+                <button onclick="showTab('components')" class="tab-btn px-6 py-4 font-medium border-b-2 border-transparent text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-server mr-2"></i>Components
+                </button>
+                <button onclick="showTab('topology')" class="tab-btn px-6 py-4 font-medium border-b-2 border-transparent text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-project-diagram mr-2"></i>Topology
+                </button>
+                <button onclick="showTab('ports')" class="tab-btn px-6 py-4 font-medium border-b-2 border-transparent text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-plug mr-2"></i>Ports & Cables
+                </button>
+                <button onclick="showTab('quiz')" class="tab-btn px-6 py-4 font-medium border-b-2 border-transparent text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-question-circle mr-2"></i>Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to Network Infrastructure Training</h2>
+                <p class="text-gray-600 mb-6">
+                    This interactive guide will help you understand the physical and logical components of our data center 
+                    network infrastructure. Click through the tabs to explore different aspects.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-server text-4xl text-blue-600 mb-3"></i>
+                        <h3 class="font-semibold text-gray-900 mb-2">Components</h3>
+                        <p class="text-sm text-gray-600">Learn about racks, switches, and patch panels</p>
+                    </div>
+                    
+                    <div class="bg-green-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-project-diagram text-4xl text-green-600 mb-3"></i>
+                        <h3 class="font-semibold text-gray-900 mb-2">Topology</h3>
+                        <p class="text-sm text-gray-600">Understand network layout and connections</p>
+                    </div>
+                    
+                    <div class="bg-purple-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-plug text-4xl text-purple-600 mb-3"></i>
+                        <h3 class="font-semibold text-gray-900 mb-2">Ports & Cables</h3>
+                        <p class="text-sm text-gray-600">Explore port types and cable standards</p>
+                    </div>
+                    
+                    <div class="bg-orange-50 rounded-lg p-6 text-center">
+                        <i class="fas fa-question-circle text-4xl text-orange-600 mb-3"></i>
+                        <h3 class="font-semibold text-gray-900 mb-2">Test Knowledge</h3>
+                        <p class="text-sm text-gray-600">Quiz yourself on what you've learned</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Components Tab -->
+        <div id="components-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                
+                <!-- Component Cards -->
+                <div class="component-card bg-white rounded-lg shadow-md p-6" onclick="showComponentDetail('rack')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-server text-3xl text-blue-600 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Server Rack</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">42U standard rack unit for mounting network equipment</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Height:</strong> 42U (1U = 1.75 inches)</div>
+                        <div class="mb-2"><strong>Width:</strong> 19 inches</div>
+                        <div><strong>Purpose:</strong> Houses switches, patch panels, servers</div>
+                    </div>
+                </div>
+                
+                <div class="component-card bg-white rounded-lg shadow-md p-6" onclick="showComponentDetail('switch')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-network-wired text-3xl text-green-600 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Network Switch</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">48-port managed switch with 4 SFP+ uplink ports</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Ports:</strong> 48x 1Gbps + 4x 10Gbps</div>
+                        <div class="mb-2"><strong>Size:</strong> 1U rack mountable</div>
+                        <div><strong>Purpose:</strong> Connect devices, route traffic</div>
+                    </div>
+                </div>
+                
+                <div class="component-card bg-white rounded-lg shadow-md p-6" onclick="showComponentDetail('patch')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-th text-3xl text-purple-600 mr-4"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Patch Panel</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">24-port Cat6 patch panel for cable management</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Ports:</strong> 24x RJ45</div>
+                        <div class="mb-2"><strong>Size:</strong> 1U rack mountable</div>
+                        <div><strong>Purpose:</strong> Organize and terminate cables</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- Detail Panel -->
+            <div id="component-detail" class="bg-white rounded-lg shadow-md p-8 hidden">
+                <button onclick="hideComponentDetail()" class="text-gray-600 hover:text-gray-900 mb-4">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Components
+                </button>
+                <div id="detail-content"></div>
+            </div>
+            
+            <!-- Interactive Rack Diagram -->
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Interactive 42U Server Rack</h3>
+                <p class="text-gray-600 mb-6">Click on any equipment to see detailed port layout, connections, and wiring diagrams</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Rack Visual with Cables -->
+                    <div class="lg:col-span-2">
+                        <div class="relative">
+                            <!-- Cable connections overlay -->
+                            <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index: 1;">
+                                <!-- Fiber from ground floor to Core Switch (U1) -->
+                                <path d="M 50 850 L 50 50" class="cable-line cable-fiber" stroke-dasharray="5,5"/>
+                                <text x="60" y="450" fill="#f59e0b" font-size="11" transform="rotate(-90 60 450)">Fiber from Ground Floor</text>
+                                
+                                <!-- Core Switch to Patch Panel A -->
+                                <path d="M 200 50 Q 250 80 200 110" class="cable-line cable-cat6"/>
+                                <path d="M 210 50 Q 260 80 210 110" class="cable-line cable-cat6"/>
+                                <path d="M 220 50 Q 270 80 220 110" class="cable-line cable-cat6"/>
+                                
+                                <!-- Patch Panel A to Access Switch 1 -->
+                                <path d="M 200 130 Q 250 150 200 170" class="cable-line cable-cat6"/>
+                                <path d="M 210 130 Q 260 150 210 170" class="cable-line cable-cat6"/>
+                                <path d="M 220 130 Q 270 150 220 170" class="cable-line cable-cat6"/>
+                                <path d="M 230 130 Q 280 150 230 170" class="cable-line cable-cat6"/>
+                                <path d="M 240 130 Q 290 150 240 170" class="cable-line cable-cat6"/>
+                                
+                                <!-- Core Switch to Patch Panel B -->
+                                <path d="M 200 50 Q 250 130 200 210" class="cable-line cable-cat6"/>
+                                <path d="M 210 50 Q 260 130 210 210" class="cable-line cable-cat6"/>
+                                
+                                <!-- Patch Panel B to Access Switch 2 -->
+                                <path d="M 200 230 Q 250 250 200 270" class="cable-line cable-cat6"/>
+                                <path d="M 210 230 Q 260 250 210 270" class="cable-line cable-cat6"/>
+                                <path d="M 220 230 Q 270 250 220 270" class="cable-line cable-cat6"/>
+                                
+                                <!-- Access switches back to Core (uplinks) - Fiber -->
+                                <path d="M 150 180 Q 100 100 150 60" class="cable-line cable-fiber"/>
+                                <path d="M 150 280 Q 100 150 150 60" class="cable-line cable-fiber"/>
+                                
+                                <!-- Power cables to PDU -->
+                                <path d="M 80 750 L 150 50" class="cable-line cable-power" stroke-dasharray="3,3" opacity="0.3"/>
+                                <path d="M 80 750 L 150 170" class="cable-line cable-power" stroke-dasharray="3,3" opacity="0.3"/>
+                                <path d="M 80 750 L 150 270" class="cable-line cable-power" stroke-dasharray="3,3" opacity="0.3"/>
+                            </svg>
+                            
+                            <div class="border-4 border-gray-800 rounded-lg p-4 bg-gradient-to-b from-gray-100 to-gray-200 relative" style="height: 800px; overflow-y: auto; z-index: 2;">
+                                <div class="text-center mb-4">
+                                    <div class="font-bold text-gray-900 text-lg">42U Server Rack</div>
+                                    <div class="text-sm text-gray-600">Click equipment for details • Cables shown in diagram</div>
+                                </div>
+                                <div id="rack-units"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Panel -->
+                    <div>
+                        <div class="bg-blue-50 rounded-lg p-6 mb-4">
+                            <h4 class="font-semibold text-gray-900 mb-3">Rack Legend</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-blue-600 rounded mr-2"></div>
+                                    <span>Network Switches</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-purple-600 rounded mr-2"></div>
+                                    <span>Patch Panels</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-green-600 rounded mr-2"></div>
+                                    <span>Servers</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-orange-600 rounded mr-2"></div>
+                                    <span>Firewall</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-red-600 rounded mr-2"></div>
+                                    <span>PDU (Power)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                                    <span>Empty Space</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-yellow-50 rounded-lg p-6 mb-4">
+                            <h4 class="font-semibold text-gray-900 mb-3">Quick Stats</h4>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div class="flex justify-between">
+                                    <span>Total Units:</span>
+                                    <strong>42U</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Used:</span>
+                                    <strong class="text-blue-600">8U</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Available:</span>
+                                    <strong class="text-green-600">34U</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Switches:</span>
+                                    <strong>3</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Patch Panels:</span>
+                                    <strong>2</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 rounded-lg p-6 mb-4">
+                            <h4 class="font-semibold text-gray-900 mb-3">Cable Legend</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-0.5 bg-orange-500 mr-2"></div>
+                                    <span>Fiber Optic (10Gbps)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-0.5 bg-blue-500 mr-2"></div>
+                                    <span>Cat6 Ethernet (1Gbps)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-0.5 bg-red-500 mr-2" style="opacity: 0.3;"></div>
+                                    <span>Power Cable</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 rounded-lg p-6">
+                            <h4 class="font-semibold text-gray-900 mb-3">Best Practices</h4>
+                            <ul class="text-sm text-gray-600 space-y-2">
+                                <li>• 1U spacing for airflow</li>
+                                <li>• Patch panels near switches</li>
+                                <li>• Heavy equipment at bottom</li>
+                                <li>• Label everything</li>
+                                <li>• Cable management</li>
+                                <li>• Hot/cold aisle design</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Equipment Detail Modal -->
+            <div id="equipment-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeEquipmentModal(event)">
+                <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="sticky top-0 bg-white border-b px-8 py-4 flex justify-between items-center">
+                        <h3 id="modal-title" class="text-2xl font-bold text-gray-900"></h3>
+                        <button onclick="closeEquipmentModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    <div id="modal-content" class="p-8"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Topology Tab -->
+        <div id="topology-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Network Topology</h2>
+                
+                <div class="mb-8">
+                    <div class="flex gap-4 mb-4">
+                        <button onclick="showTopology('datacenter')" class="topology-btn px-4 py-2 bg-blue-600 text-white rounded-lg">
+                            Data Center View
+                        </button>
+                        <button onclick="showTopology('multisite')" class="topology-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">
+                            Multi-Site View
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Data Center Topology -->
+                <div id="datacenter-topology">
+                    <svg width="100%" height="600" viewBox="0 0 1000 600" class="border rounded-lg bg-gray-50">
+                        <!-- Core Switch -->
+                        <rect x="450" y="50" width="100" height="60" fill="#3b82f6" stroke="#1e40af" stroke-width="2" rx="5"/>
+                        <text x="500" y="85" text-anchor="middle" fill="white" font-weight="bold">Core Switch</text>
+                        
+                        <!-- Distribution Switches -->
+                        <rect x="200" y="200" width="100" height="60" fill="#10b981" stroke="#059669" stroke-width="2" rx="5"/>
+                        <text x="250" y="235" text-anchor="middle" fill="white" font-size="12">Dist Switch 1</text>
+                        
+                        <rect x="700" y="200" width="100" height="60" fill="#10b981" stroke="#059669" stroke-width="2" rx="5"/>
+                        <text x="750" y="235" text-anchor="middle" fill="white" font-size="12">Dist Switch 2</text>
+                        
+                        <!-- Access Switches -->
+                        <rect x="50" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="90" y="430" text-anchor="middle" fill="white" font-size="11">Access SW1</text>
+                        
+                        <rect x="200" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="240" y="430" text-anchor="middle" fill="white" font-size="11">Access SW2</text>
+                        
+                        <rect x="350" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="390" y="430" text-anchor="middle" fill="white" font-size="11">Access SW3</text>
+
+                        
+                        <rect x="570" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="610" y="430" text-anchor="middle" fill="white" font-size="11">Access SW4</text>
+                        
+                        <rect x="720" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="760" y="430" text-anchor="middle" fill="white" font-size="11">Access SW5</text>
+                        
+                        <rect x="870" y="400" width="80" height="50" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5"/>
+                        <text x="910" y="430" text-anchor="middle" fill="white" font-size="11">Access SW6</text>
+                        
+                        <!-- Connections -->
+                        <line x1="500" y1="110" x2="250" y2="200" stroke="#f59e0b" stroke-width="3"/>
+                        <line x1="500" y1="110" x2="750" y2="200" stroke="#f59e0b" stroke-width="3"/>
+                        
+                        <line x1="250" y1="260" x2="90" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        <line x1="250" y1="260" x2="240" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        <line x1="250" y1="260" x2="390" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        
+                        <line x1="750" y1="260" x2="610" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        <line x1="750" y1="260" x2="760" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        <line x1="750" y1="260" x2="910" y2="400" stroke="#6b7280" stroke-width="2"/>
+                        
+                        <!-- Labels -->
+                        <text x="350" y="150" fill="#f59e0b" font-size="12" font-weight="bold">10Gbps Fiber</text>
+                        <text x="150" y="330" fill="#6b7280" font-size="12">1Gbps Copper</text>
+                        
+                        <!-- Legend -->
+                        <rect x="20" y="520" width="300" height="70" fill="white" stroke="#d1d5db" stroke-width="1" rx="5"/>
+                        <text x="30" y="540" font-weight="bold" font-size="14">Legend:</text>
+                        <rect x="30" y="550" width="15" height="15" fill="#3b82f6"/>
+                        <text x="50" y="562" font-size="12">Core Layer (Backbone)</text>
+                        <rect x="180" y="550" width="15" height="15" fill="#10b981"/>
+                        <text x="200" y="562" font-size="12">Distribution Layer</text>
+                        <rect x="30" y="570" width="15" height="15" fill="#8b5cf6"/>
+                        <text x="50" y="582" font-size="12">Access Layer (End Devices)</text>
+                    </svg>
+                </div>
+
+                
+                <!-- Multi-Site Topology -->
+                <div id="multisite-topology" class="hidden">
+                    <svg width="100%" height="600" viewBox="0 0 1000 600" class="border rounded-lg bg-gray-50">
+                        <!-- Main Data Center -->
+                        <rect x="400" y="50" width="200" height="150" fill="#3b82f6" stroke="#1e40af" stroke-width="3" rx="10"/>
+                        <text x="500" y="80" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Main Data Center</text>
+                        <text x="500" y="110" text-anchor="middle" fill="white" font-size="12">Core Switches</text>
+                        <text x="500" y="130" text-anchor="middle" fill="white" font-size="12">Firewalls</text>
+                        <text x="500" y="150" text-anchor="middle" fill="white" font-size="12">Servers</text>
+                        <circle cx="500" cy="180" r="8" fill="#f59e0b"/>
+                        
+                        <!-- Branch Office 1 -->
+                        <rect x="100" y="400" width="150" height="100" fill="#10b981" stroke="#059669" stroke-width="2" rx="8"/>
+                        <text x="175" y="430" text-anchor="middle" fill="white" font-weight="bold">Branch Office 1</text>
+                        <text x="175" y="455" text-anchor="middle" fill="white" font-size="11">London</text>
+                        <circle cx="175" cy="380" r="6" fill="#f59e0b"/>
+                        
+                        <!-- Branch Office 2 -->
+                        <rect x="425" y="400" width="150" height="100" fill="#10b981" stroke="#059669" stroke-width="2" rx="8"/>
+                        <text x="500" y="430" text-anchor="middle" fill="white" font-weight="bold">Branch Office 2</text>
+                        <text x="500" y="455" text-anchor="middle" fill="white" font-size="11">New York</text>
+                        <circle cx="500" cy="380" r="6" fill="#f59e0b"/>
+                        
+                        <!-- Branch Office 3 -->
+                        <rect x="750" y="400" width="150" height="100" fill="#10b981" stroke="#059669" stroke-width="2" rx="8"/>
+                        <text x="825" y="430" text-anchor="middle" fill="white" font-weight="bold">Branch Office 3</text>
+                        <text x="825" y="455" text-anchor="middle" fill="white" font-size="11">Tokyo</text>
+                        <circle cx="825" cy="380" r="6" fill="#f59e0b"/>
+                        
+                        <!-- Fiber Connections -->
+                        <path d="M 500 188 Q 300 280 175 380" class="fiber-cable"/>
+                        <path d="M 500 188 L 500 380" class="fiber-cable"/>
+                        <path d="M 500 188 Q 700 280 825 380" class="fiber-cable"/>
+                        
+                        <!-- Connection Labels -->
+                        <text x="320" y="280" fill="#f59e0b" font-size="11" font-weight="bold">10Gbps Fiber</text>
+                        <text x="510" y="280" fill="#f59e0b" font-size="11" font-weight="bold">10Gbps Fiber</text>
+                        <text x="680" y="280" fill="#f59e0b" font-size="11" font-weight="bold">10Gbps Fiber</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Ports & Cables Tab -->
+        <div id="ports-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                
+                <!-- Port Types -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Port Types & Usage</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Available Ports</h4>
+                                <span class="port available"></span>
+                            </div>
+                            <p class="text-sm text-gray-600">Ready for connection, not currently in use</p>
+                        </div>
+                        
+                        <div class="border-l-4 border-red-500 pl-4 py-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">In-Use Ports</h4>
+                                <span class="port in-use"></span>
+                            </div>
+                            <p class="text-sm text-gray-600">Currently connected and active</p>
+                        </div>
+                        
+                        <div class="border-l-4 border-orange-500 pl-4 py-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Reserved Ports</h4>
+                                <span class="port reserved"></span>
+                            </div>
+                            <p class="text-sm text-gray-600">Reserved for specific purposes (management, monitoring)</p>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <strong>Common Reservations:</strong>
+                                <ul class="ml-4 mt-1">
+                                    <li>• Port 1: Management interface</li>
+                                    <li>• Port 2: Monitoring/SNMP</li>
+                                    <li>• Last 4 ports: Uplinks to core</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="border-l-4 border-purple-500 pl-4 py-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Uplink Ports</h4>
+                                <span class="port uplink"></span>
+                            </div>
+                            <p class="text-sm text-gray-600">High-speed connections to core/distribution switches (SFP+)</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <!-- Cable Types -->
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Cable Types & Standards</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="border rounded-lg p-4 bg-blue-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-ethernet text-2xl text-blue-600 mr-3"></i>
+                                <h4 class="font-semibold text-gray-900">Cat6 Ethernet Cable</h4>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div><strong>Speed:</strong> Up to 10 Gbps (short distances)</div>
+                                <div><strong>Max Length:</strong> 100 meters (328 feet)</div>
+                                <div><strong>Connector:</strong> RJ45</div>
+                                <div><strong>Use Case:</strong> Desktop to switch, patch panel connections</div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-4 bg-orange-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-circle text-2xl text-orange-600 mr-3"></i>
+                                <h4 class="font-semibold text-gray-900">Fiber Optic Cable</h4>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div><strong>Types:</strong> Single-mode (long distance), Multi-mode (short distance)</div>
+                                <div><strong>Speed:</strong> 10 Gbps to 100+ Gbps</div>
+                                <div><strong>Max Length:</strong> Up to 40km+ (single-mode)</div>
+                                <div><strong>Connector:</strong> LC, SC, ST</div>
+                                <div><strong>Use Case:</strong> Building-to-building, core switch connections</div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-4 bg-green-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-plug text-2xl text-green-600 mr-3"></i>
+                                <h4 class="font-semibold text-gray-900">SFP/SFP+ Module</h4>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div><strong>SFP:</strong> 1 Gbps transceiver</div>
+                                <div><strong>SFP+:</strong> 10 Gbps transceiver</div>
+                                <div><strong>Purpose:</strong> Convert electrical to optical signal</div>
+                                <div><strong>Use Case:</strong> Uplink ports on switches</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- Interactive Switch Port Map -->
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Interactive 48-Port Switch</h3>
+                <p class="text-gray-600 mb-4">Click on any port to see its details and status</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="text-white text-center mb-4 font-bold">Cisco Catalyst 2960X - 48 Port Switch</div>
+                    
+                    <!-- Ports 1-24 -->
+                    <div class="mb-4">
+                        <div class="text-white text-sm mb-2">Ports 1-24</div>
+                        <div class="bg-gray-700 rounded p-3" id="ports-1-24"></div>
+                    </div>
+                    
+                    <!-- Ports 25-48 -->
+                    <div class="mb-4">
+                        <div class="text-white text-sm mb-2">Ports 25-48</div>
+                        <div class="bg-gray-700 rounded p-3" id="ports-25-48"></div>
+                    </div>
+                    
+                    <!-- Uplink Ports -->
+                    <div>
+                        <div class="text-white text-sm mb-2">Uplink Ports (SFP+)</div>
+                        <div class="bg-gray-700 rounded p-3" id="uplink-ports"></div>
+                    </div>
+                </div>
+                
+                <!-- Port Detail Panel -->
+                <div id="port-detail" class="mt-6 bg-blue-50 rounded-lg p-6 hidden">
+                    <h4 class="font-semibold text-gray-900 mb-3">Port Information</h4>
+                    <div id="port-info" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Quiz Tab -->
+        <div id="quiz-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Knowledge Check</h2>
+                
+                <div id="quiz-container">
+                    <div class="quiz-question mb-8" data-question="1">
+                        <h3 class="font-semibold text-gray-900 mb-4">1. What does 1U represent in a server rack?</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q1" value="a" class="mr-3">
+                                <span>1 inch of vertical space</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q1" value="b" class="mr-3">
+                                <span>1.75 inches of vertical space</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q1" value="c" class="mr-3">
+                                <span>1 meter of vertical space</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-question mb-8" data-question="2">
+                        <h3 class="font-semibold text-gray-900 mb-4">2. What is the maximum length for a Cat6 Ethernet cable?</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q2" value="a" class="mr-3">
+                                <span>50 meters</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q2" value="b" class="mr-3">
+                                <span>100 meters</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q2" value="c" class="mr-3">
+                                <span>200 meters</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    
+                    <div class="quiz-question mb-8" data-question="3">
+                        <h3 class="font-semibold text-gray-900 mb-4">3. What is the purpose of a patch panel?</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q3" value="a" class="mr-3">
+                                <span>To amplify network signals</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q3" value="b" class="mr-3">
+                                <span>To organize and terminate cables</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q3" value="c" class="mr-3">
+                                <span>To provide power to devices</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-question mb-8" data-question="4">
+                        <h3 class="font-semibold text-gray-900 mb-4">4. Which port type is typically used for uplinks between switches?</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q4" value="a" class="mr-3">
+                                <span>RJ45 Ethernet</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q4" value="b" class="mr-3">
+                                <span>SFP+ Fiber</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q4" value="c" class="mr-3">
+                                <span>USB</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-question mb-8" data-question="5">
+                        <h3 class="font-semibold text-gray-900 mb-4">5. In a three-tier network architecture, which layer connects end-user devices?</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q5" value="a" class="mr-3">
+                                <span>Core Layer</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q5" value="b" class="mr-3">
+                                <span>Distribution Layer</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="q5" value="c" class="mr-3">
+                                <span>Access Layer</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button onclick="checkQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg transition">
+                        Submit Quiz
+                    </button>
+                </div>
+                
+                <div id="quiz-results" class="hidden mt-6"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+
+
+    <script>
+        // Mock data for ports
+        const portData = {
+            1: { status: 'reserved', device: 'Management Interface', vlan: 'MGMT', speed: '1Gbps' },
+            2: { status: 'reserved', device: 'Monitoring/SNMP', vlan: 'MGMT', speed: '1Gbps' },
+            5: { status: 'in-use', device: 'Server-01', vlan: 'VLAN10', speed: '1Gbps' },
+            6: { status: 'in-use', device: 'Server-02', vlan: 'VLAN10', speed: '1Gbps' },
+            10: { status: 'in-use', device: 'Workstation-A', vlan: 'VLAN20', speed: '1Gbps' },
+            15: { status: 'in-use', device: 'Printer-01', vlan: 'VLAN30', speed: '100Mbps' },
+            20: { status: 'in-use', device: 'AP-Floor2', vlan: 'VLAN40', speed: '1Gbps' },
+            45: { status: 'reserved', device: 'Uplink to Core-1', vlan: 'Trunk', speed: '10Gbps' },
+            46: { status: 'reserved', device: 'Uplink to Core-2', vlan: 'Trunk', speed: '10Gbps' },
+            47: { status: 'reserved', device: 'Reserved for expansion', vlan: '-', speed: '10Gbps' },
+            48: { status: 'reserved', device: 'Reserved for expansion', vlan: '-', speed: '10Gbps' }
+        };
+        
+        // Detailed equipment data - Admin Block A (BLK-A)
+        const equipmentData = {
+            'Core Switch 1': {
+                type: 'switch',
+                model: 'Manageable PoE Switch',
+                location: 'Admin Block A',
+                rackId: 'BLK-A',
+                ports: 50,
+                uplinks: 2,
+                power: 'UPS',
+                poe: 'Yes (Manageable)',
+                connections: [
+                    { port: 1, device: 'Secretary Bhati Yadav ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-01' },
+                    { port: 2, device: 'Zonal Secretary Gurminder ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-02' },
+                    { port: 3, device: 'Uplink from LIU', type: 'uplink', cable: 'Fiber (from ground)', fieldId: '-' },
+                    { port: 4, device: 'Printer', type: 'in-use', cable: 'Cat6', fieldId: 'D-04' },
+                    { port: 5, device: 'Rishi ji, Vinti Di', type: 'in-use', cable: 'Cat6', fieldId: 'D-05' },
+                    { port: 6, device: 'WIFI', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-06' },
+                    { port: 7, device: 'Rishi ji, Vinti Di', type: 'in-use', cable: 'Cat6', fieldId: 'D-07' },
+                    { port: 8, device: 'Rishi ji, Vinti Di', type: 'in-use', cable: 'Cat6', fieldId: 'D-08' },
+                    { port: 9, device: 'Rishi ji, Vinti Di', type: 'in-use', cable: 'Cat6', fieldId: 'D-09' },
+                    { port: 10, device: 'Meeting room 1', type: 'in-use', cable: 'Cat6', fieldId: 'D-10' },
+                    { port: 11, device: 'Col Dhiman ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-11' },
+                    { port: 12, device: 'Connected To Be Shift on 37', type: 'in-use', cable: 'Cat6', fieldId: 'D-60/D-37' },
+                    { port: 13, device: 'Col Dhiman ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-13' },
+                    { port: 14, device: 'Engineering dept - Sandeep Sachdeva ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-14' },
+                    { port: 15, device: 'Engineering dept - Sandeep Sachdeva ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-15' },
+                    { port: 18, device: 'Engineering dept - Sandeep Sachdeva ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-18' },
+                    { port: 19, device: 'Engineering dept - Sandeep Sachdeva ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-19' },
+                    { port: 20, device: 'Legal Dept - Sunil Gulati ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-20' },
+                    { port: 21, device: 'Legal Dept - Sunil Gulati ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-21' },
+                    { port: 22, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-22' },
+                    { port: 24, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-24' },
+                    { port: 25, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-58/D-25' },
+                    { port: 26, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-26' },
+                    { port: 27, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-27' },
+                    { port: 28, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-28' },
+                    { port: 29, device: 'Conference Hall', type: 'in-use', cable: 'Cat6', fieldId: 'D-29' },
+                    { port: 30, device: 'Vikas Sethi ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-57/D-30' },
+                    { port: 31, device: 'Vikas Sethi ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-31' },
+                    { port: 32, device: 'Vikas Sethi ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-32' },
+                    { port: 33, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-56/D-33' },
+                    { port: 34, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-55/D-34' },
+                    { port: 35, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-54/D-35' },
+                    { port: 36, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-53/D-36' },
+                    { port: 37, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-37' },
+                    { port: 38, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-38' },
+                    { port: 39, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-39' },
+                    { port: 40, device: 'Satsang Karta HOD room', type: 'in-use', cable: 'Cat6', fieldId: 'D-40' },
+                    { port: 41, device: 'Block A A-1', type: 'in-use', cable: 'Cat6', fieldId: 'D-41' },
+                    { port: 42, device: 'Block A A-2', type: 'in-use', cable: 'Cat6', fieldId: 'D-42' },
+                    { port: 43, device: 'Block A A-3', type: 'in-use', cable: 'Cat6', fieldId: 'D-43' },
+                    { port: 44, device: 'Block A A-4', type: 'in-use', cable: 'Cat6', fieldId: 'D-44/Printer' },
+                    { port: 48, device: 'Medical Store Room', type: 'in-use', cable: 'Cat6', fieldId: 'D-48' },
+                    { port: 49, device: 'WIFI - WS Hall', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-49' },
+                    { port: 50, device: 'WIFI - Rack Room', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-50' }
+                ]
+            },
+            'Patch Panel A': {
+                type: 'patch',
+                model: '48-Port Cat6 Patch Panel',
+                location: 'Admin Block A',
+                ports: 48,
+                category: 'Cat6',
+                connections: [
+                    { port: 'D-01', device: 'Secretary Bhati Yadav ji', destination: 'Switch 1 Port 1', cable: 'Cat6' },
+                    { port: 'D-02', device: 'Zonal Secretary Gurminder ji', destination: 'Switch 1 Port 2', cable: 'Cat6' },
+                    { port: 'D-04', device: 'Printer', destination: 'Switch 1 Port 4', cable: 'Cat6' },
+                    { port: 'D-05', device: 'Rishi ji, Vinti Di', destination: 'Switch 1 Port 5', cable: 'Cat6' },
+                    { port: 'D-06', device: 'WIFI', destination: 'Switch 1 Port 6', cable: 'Cat6' },
+                    { port: 'D-07', device: 'Rishi ji, Vinti Di', destination: 'Switch 1 Port 7', cable: 'Cat6' },
+                    { port: 'D-08', device: 'Rishi ji, Vinti Di', destination: 'Switch 1 Port 8', cable: 'Cat6' },
+                    { port: 'D-09', device: 'Rishi ji, Vinti Di', destination: 'Switch 1 Port 9', cable: 'Cat6' },
+                    { port: 'D-10', device: 'Meeting room 1', destination: 'Switch 1 Port 10', cable: 'Cat6' },
+                    { port: 'D-11', device: 'Col Dhiman ji', destination: 'Switch 1 Port 11', cable: 'Cat6' },
+                    { port: 'D-13', device: 'Col Dhiman ji', destination: 'Switch 1 Port 13', cable: 'Cat6' },
+                    { port: 'D-14', device: 'Engineering - Sandeep Sachdeva ji', destination: 'Switch 1 Port 14', cable: 'Cat6' },
+                    { port: 'D-15', device: 'Engineering - Sandeep Sachdeva ji', destination: 'Switch 1 Port 15', cable: 'Cat6' },
+                    { port: 'D-18', device: 'Engineering - Sandeep Sachdeva ji', destination: 'Switch 1 Port 18', cable: 'Cat6' },
+                    { port: 'D-19', device: 'Engineering - Sandeep Sachdeva ji', destination: 'Switch 1 Port 19', cable: 'Cat6' },
+                    { port: 'D-20', device: 'Legal Dept - Sunil Gulati ji', destination: 'Switch 1 Port 20', cable: 'Cat6' },
+                    { port: 'D-21', device: 'Legal Dept - Sunil Gulati ji', destination: 'Switch 1 Port 21', cable: 'Cat6' },
+                    { port: 'D-22', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 22', cable: 'Cat6' },
+                    { port: 'D-24', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 24', cable: 'Cat6' }
+                ]
+            },
+            'Access Switch 1': {
+                type: 'switch',
+                model: 'Manageable PoE Switch',
+                location: 'Admin Block A - Switch 1',
+                ports: 50,
+                uplinks: 1,
+                power: 'UPS',
+                poe: 'Yes',
+                connections: [
+                    { port: 1, device: 'Secretary Bhati Yadav ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-01' },
+                    { port: 2, device: 'Zonal Secretary Gurminder ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-02' },
+                    { port: 3, device: 'Uplink to LIU', type: 'uplink', cable: 'Fiber', fieldId: '-' },
+                    { port: 4, device: 'Printer', type: 'in-use', cable: 'Cat6', fieldId: 'D-04' },
+                    { port: 5, device: 'Rishi ji, Vinti Di', type: 'in-use', cable: 'Cat6', fieldId: 'D-05' },
+                    { port: 6, device: 'WIFI', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-06' },
+                    { port: 10, device: 'Meeting room 1', type: 'in-use', cable: 'Cat6', fieldId: 'D-10' },
+                    { port: 11, device: 'Col Dhiman ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-11' },
+                    { port: 14, device: 'Engineering dept - Sandeep Sachdeva ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-14' },
+                    { port: 20, device: 'Legal Dept - Sunil Gulati ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-20' },
+                    { port: 22, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-22' }
+                ]
+            },
+            'Patch Panel B': {
+                type: 'patch',
+                model: '48-Port Cat6 Patch Panel',
+                location: 'Admin Block A - Panel 2',
+                ports: 48,
+                category: 'Cat6',
+                connections: [
+                    { port: 'D-25', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 25', cable: 'Cat6' },
+                    { port: 'D-26', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 26', cable: 'Cat6' },
+                    { port: 'D-27', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 27', cable: 'Cat6' },
+                    { port: 'D-28', device: 'Account Dept - Vinay ji', destination: 'Switch 1 Port 28', cable: 'Cat6' },
+                    { port: 'D-29', device: 'Conference Hall', destination: 'Switch 1 Port 29', cable: 'Cat6' },
+                    { port: 'D-30', device: 'Vikas Sethi ji', destination: 'Switch 1 Port 30', cable: 'Cat6' },
+                    { port: 'D-31', device: 'Vikas Sethi ji', destination: 'Switch 1 Port 31', cable: 'Cat6' },
+                    { port: 'D-32', device: 'Vikas Sethi ji', destination: 'Switch 1 Port 32', cable: 'Cat6' },
+                    { port: 'D-33', device: 'Satsang Karta room', destination: 'Switch 1 Port 33', cable: 'Cat6' },
+                    { port: 'D-34', device: 'Satsang Karta room', destination: 'Switch 1 Port 34', cable: 'Cat6' },
+                    { port: 'D-40', device: 'Satsang Karta HOD room', destination: 'Switch 1 Port 40', cable: 'Cat6' },
+                    { port: 'D-41', device: 'Block A A-1', destination: 'Switch 1 Port 41', cable: 'Cat6' },
+                    { port: 'D-42', device: 'Block A A-2', destination: 'Switch 1 Port 42', cable: 'Cat6' },
+                    { port: 'D-43', device: 'Block A A-3', destination: 'Switch 1 Port 43', cable: 'Cat6' },
+                    { port: 'D-49', device: 'WIFI - WS Hall', destination: 'Switch 1 Port 49', cable: 'Cat6' },
+                    { port: 'D-50', device: 'WIFI - Rack Room', destination: 'Switch 1 Port 50', cable: 'Cat6' }
+                ]
+            },
+            'Access Switch 2': {
+                type: 'switch',
+                model: 'Manageable PoE Switch',
+                location: 'Admin Block A - Switch 2',
+                ports: 48,
+                uplinks: 1,
+                power: 'UPS',
+                poe: 'Yes',
+                connections: [
+                    { port: 1, device: 'Uplink to LIU', type: 'uplink', cable: 'Fiber', fieldId: '-' },
+                    { port: 25, device: 'Account Dept - Vinay ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-25' },
+                    { port: 29, device: 'Conference Hall', type: 'in-use', cable: 'Cat6', fieldId: 'D-29' },
+                    { port: 30, device: 'Vikas Sethi ji', type: 'in-use', cable: 'Cat6', fieldId: 'D-30' },
+                    { port: 33, device: 'Satsang Karta room', type: 'in-use', cable: 'Cat6', fieldId: 'D-33' },
+                    { port: 40, device: 'Satsang Karta HOD room', type: 'in-use', cable: 'Cat6', fieldId: 'D-40' },
+                    { port: 41, device: 'Block A A-1', type: 'in-use', cable: 'Cat6', fieldId: 'D-41' },
+                    { port: 49, device: 'WIFI - WS Hall', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-49' },
+                    { port: 50, device: 'WIFI - Rack Room', type: 'in-use', cable: 'Cat6 (PoE)', fieldId: 'D-50' }
+                ]
+            },
+            'PDU 1': {
+                type: 'pdu',
+                model: 'APC AP8959',
+                outlets: 24,
+                power: '208V 30A',
+                monitoring: 'Network monitored',
+                connections: [
+                    { outlet: 1, device: 'Core Switch 1', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 2, device: 'Access Switch 1', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 3, device: 'Access Switch 2', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 4, device: 'Reserved', type: 'reserved', cable: '-' }
+                ]
+            },
+            'PDU 2': {
+                type: 'pdu',
+                model: 'APC AP8959',
+                outlets: 24,
+                power: '208V 30A (Redundant)',
+                monitoring: 'Network monitored',
+                connections: [
+                    { outlet: 1, device: 'Core Switch 1 (Redundant PSU)', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 2, device: 'Access Switch 1 (Redundant PSU)', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 3, device: 'Access Switch 2 (Redundant PSU)', type: 'in-use', cable: 'C13 Power' },
+                    { outlet: 4, device: 'Reserved', type: 'reserved', cable: '-' }
+                ]
+            }
+        };
+        
+        // Initialize rack units
+        function initializeRack() {
+            const rackContainer = document.getElementById('rack-units');
+            const equipment = [
+                { u: 1, type: 'switch', name: 'Core Switch 1', color: 'bg-blue-600', icon: 'fa-network-wired', desc: 'Main distribution switch' },
+                { u: 2, type: 'empty', name: 'Empty', color: 'bg-gray-300', icon: '' },
+                { u: 3, type: 'patch', name: 'Patch Panel A', color: 'bg-purple-600', icon: 'fa-th', desc: 'Floor 1 connections' },
+                { u: 4, type: 'switch', name: 'Access Switch 1', color: 'bg-blue-600', icon: 'fa-network-wired', desc: 'Floor 1 access' },
+                { u: 5, type: 'empty', name: 'Empty', color: 'bg-gray-300', icon: '' },
+                { u: 6, type: 'patch', name: 'Patch Panel B', color: 'bg-purple-600', icon: 'fa-th', desc: 'Floor 2 connections' },
+                { u: 7, type: 'switch', name: 'Access Switch 2', color: 'bg-blue-600', icon: 'fa-network-wired', desc: 'Floor 2 access' },
+                { u: 40, type: 'pdu', name: 'PDU 1', color: 'bg-red-600', icon: 'fa-bolt', desc: 'Power distribution' },
+                { u: 41, type: 'pdu', name: 'PDU 2', color: 'bg-red-600', icon: 'fa-bolt', desc: 'Redundant power' }
+            ];
+            
+            for (let i = 1; i <= 42; i++) {
+                const unit = document.createElement('div');
+                unit.className = 'rack-unit flex items-center px-2';
+                
+                const equip = equipment.find(e => e.u === i);
+                if (equip && equip.type !== 'empty') {
+                    unit.innerHTML = `
+                        <span class="text-xs text-gray-500 w-8">${i}U</span>
+                        <div class="${equip.color} text-white text-xs px-3 py-2 rounded flex-1 cursor-pointer hover:opacity-90 transition flex items-center justify-between group" onclick="showEquipmentDetail('${equip.name}')">
+                            <div class="flex items-center gap-2">
+                                <i class="fas ${equip.icon}"></i>
+                                <span>${equip.name}</span>
+                            </div>
+                            <span class="text-xs opacity-75 group-hover:opacity-100">${equip.desc || ''}</span>
+                        </div>
+                    `;
+                } else {
+                    unit.innerHTML = `
+                        <span class="text-xs text-gray-500 w-8">${i}U</span>
+                        <div class="bg-gray-200 text-gray-500 text-xs px-3 py-2 rounded flex-1 text-center border border-dashed border-gray-400">
+                            Available
+                        </div>
+                    `;
+                }
+                
+                rackContainer.appendChild(unit);
+            }
+        }
+
+        
+        // Initialize switch ports
+        function initializePorts() {
+            // Ports 1-24
+            const container1 = document.getElementById('ports-1-24');
+            for (let i = 1; i <= 24; i++) {
+                const port = createPort(i);
+                container1.appendChild(port);
+            }
+            
+            // Ports 25-48
+            const container2 = document.getElementById('ports-25-48');
+            for (let i = 25; i <= 48; i++) {
+                const port = createPort(i);
+                container2.appendChild(port);
+            }
+            
+            // Uplink ports
+            const uplinkContainer = document.getElementById('uplink-ports');
+            for (let i = 1; i <= 4; i++) {
+                const port = document.createElement('span');
+                port.className = 'port uplink';
+                port.setAttribute('data-port', `SFP${i}`);
+                port.onclick = () => showPortDetail(`SFP${i}`, 'uplink', { 
+                    device: i <= 2 ? `Core Switch ${i}` : 'Reserved',
+                    speed: '10Gbps',
+                    type: 'Fiber SFP+'
+                });
+                uplinkContainer.appendChild(port);
+            }
+        }
+        
+        function createPort(num) {
+            const port = document.createElement('span');
+            const data = portData[num];
+            const status = data ? data.status : 'available';
+            
+            port.className = `port ${status}`;
+            port.setAttribute('data-port', num);
+            port.onclick = () => showPortDetail(num, status, data);
+            
+            return port;
+        }
+        
+        function showPortDetail(portNum, status, data) {
+            const detailPanel = document.getElementById('port-detail');
+            const infoDiv = document.getElementById('port-info');
+            
+            let statusText = status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
+            let statusColor = {
+                'available': 'text-green-600',
+                'in-use': 'text-red-600',
+                'reserved': 'text-orange-600',
+                'uplink': 'text-purple-600'
+            }[status];
+            
+            if (data) {
+                infoDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <strong>Port Number:</strong> ${portNum}
+                        </div>
+                        <div>
+                            <strong>Status:</strong> <span class="${statusColor}">${statusText}</span>
+                        </div>
+                        <div>
+                            <strong>Connected Device:</strong> ${data.device || 'None'}
+                        </div>
+                        <div>
+                            <strong>Speed:</strong> ${data.speed || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>VLAN:</strong> ${data.vlan || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Type:</strong> ${data.type || 'RJ45 Ethernet'}
+                        </div>
+                    </div>
+                `;
+            } else {
+                infoDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <strong>Port Number:</strong> ${portNum}
+                        </div>
+                        <div>
+                            <strong>Status:</strong> <span class="${statusColor}">${statusText}</span>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-gray-600">This port is available for connection.</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            detailPanel.classList.remove('hidden');
+        }
+
+        
+        // Tab navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active state from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-600');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Activate button
+            event.target.classList.remove('border-transparent', 'text-gray-600');
+            event.target.classList.add('border-blue-600', 'text-blue-600');
+        }
+        
+        // Component detail
+        function showComponentDetail(type) {
+            const detailPanel = document.getElementById('component-detail');
+            const contentDiv = document.getElementById('detail-content');
+            
+            const details = {
+                rack: {
+                    title: 'Server Rack - Detailed View',
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">42U Server Rack</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3">Physical Specifications</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• <strong>Height:</strong> 42U (73.5 inches / 1.87m)</li>
+                                    <li>• <strong>Width:</strong> 19 inches (482.6mm) - Standard</li>
+                                    <li>• <strong>Depth:</strong> Typically 36-42 inches</li>
+                                    <li>• <strong>Weight Capacity:</strong> 2000-3000 lbs</li>
+                                    <li>• <strong>Material:</strong> Steel or aluminum frame</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3">Key Features</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• Adjustable mounting rails</li>
+                                    <li>• Cable management arms</li>
+                                    <li>• Ventilation panels</li>
+                                    <li>• Lockable doors (front & rear)</li>
+                                    <li>• PDU (Power Distribution Unit) mounting</li>
+                                    <li>• Grounding points</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-yellow-50 rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Best Practices</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• Plan layout before installation</li>
+                                <li>• Heavy equipment at bottom for stability</li>
+                                <li>• Leave space for airflow (hot aisle/cold aisle)</li>
+                                <li>• Use cable management to prevent tangling</li>
+                                <li>• Label everything clearly</li>
+                            </ul>
+                        </div>
+                    `
+                },
+                switch: {
+                    title: 'Network Switch - Detailed View',
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">48-Port Managed Switch</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3">Port Configuration</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• <strong>Access Ports:</strong> 48x 10/100/1000 Mbps</li>
+                                    <li>• <strong>Uplink Ports:</strong> 4x 10Gbps SFP+</li>
+                                    <li>• <strong>Management:</strong> Console port, Web GUI</li>
+                                    <li>• <strong>Power:</strong> Dual redundant PSU</li>
+                                    <li>• <strong>PoE:</strong> Optional PoE+ support</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3">Key Features</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• VLAN support (802.1Q)</li>
+                                    <li>• Link aggregation (LACP)</li>
+                                    <li>• Spanning Tree Protocol (STP)</li>
+                                    <li>• Quality of Service (QoS)</li>
+                                    <li>• Port mirroring for monitoring</li>
+                                    <li>• SNMP for management</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Common Port Reservations</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• Port 1-2: Management and monitoring</li>
+                                <li>• Port 45-48: Uplinks to core/distribution</li>
+                                <li>• Remaining ports: End device connections</li>
+                            </ul>
+                        </div>
+                    `
+                },
+                patch: {
+                    title: 'Patch Panel - Detailed View',
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">24-Port Patch Panel</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3">Specifications</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• <strong>Ports:</strong> 24x RJ45 (Cat6/Cat6a)</li>
+                                    <li>• <strong>Size:</strong> 1U rack mountable</li>
+                                    <li>• <strong>Termination:</strong> 110 punch-down or keystone</li>
+                                    <li>• <strong>Shielded:</strong> Optional STP support</li>
+                                    <li>• <strong>Color:</strong> Black (standard)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3">Purpose & Benefits</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li>• Centralized cable termination point</li>
+                                    <li>• Easy cable management and organization</li>
+                                    <li>• Protects switch ports from wear</li>
+                                    <li>• Simplifies moves, adds, and changes</li>
+                                    <li>• Professional appearance</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-purple-50 rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Installation Tips</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• Mount directly above or below corresponding switch</li>
+                                <li>• Use short patch cables (1-3 feet) to connect to switch</li>
+                                <li>• Label both ends of every cable</li>
+                                <li>• Maintain proper cable bend radius</li>
+                                <li>• Use cable management to keep organized</li>
+                            </ul>
+                        </div>
+                    `
+                }
+            };
+            
+            contentDiv.innerHTML = details[type].content;
+            detailPanel.classList.remove('hidden');
+            
+            // Scroll to detail
+            detailPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideComponentDetail() {
+            document.getElementById('component-detail').classList.add('hidden');
+        }
+
+        
+        // Topology switching
+        function showTopology(type) {
+            document.getElementById('datacenter-topology').classList.add('hidden');
+            document.getElementById('multisite-topology').classList.add('hidden');
+            
+            document.querySelectorAll('.topology-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            if (type === 'datacenter') {
+                document.getElementById('datacenter-topology').classList.remove('hidden');
+                event.target.classList.remove('bg-gray-200', 'text-gray-700');
+                event.target.classList.add('bg-blue-600', 'text-white');
+            } else {
+                document.getElementById('multisite-topology').classList.remove('hidden');
+                event.target.classList.remove('bg-gray-200', 'text-gray-700');
+                event.target.classList.add('bg-blue-600', 'text-white');
+            }
+        }
+        
+        // Quiz functionality
+        function checkQuiz() {
+            const answers = {
+                q1: 'b',  // 1.75 inches
+                q2: 'b',  // 100 meters
+                q3: 'b',  // Organize and terminate cables
+                q4: 'b',  // SFP+ Fiber
+                q5: 'c'   // Access Layer
+            };
+            
+            let score = 0;
+            let total = Object.keys(answers).length;
+            
+            for (let [question, correctAnswer] of Object.entries(answers)) {
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                if (selected && selected.value === correctAnswer) {
+                    score++;
+                }
+            }
+            
+            const percentage = (score / total) * 100;
+            const resultsDiv = document.getElementById('quiz-results');
+            
+            let message = '';
+            let colorClass = '';
+            
+            if (percentage === 100) {
+                message = 'Perfect! You have excellent understanding of network infrastructure!';
+                colorClass = 'bg-green-50 border-green-500 text-green-800';
+            } else if (percentage >= 80) {
+                message = 'Great job! You have a solid grasp of the concepts.';
+                colorClass = 'bg-blue-50 border-blue-500 text-blue-800';
+            } else if (percentage >= 60) {
+                message = 'Good effort! Review the materials and try again.';
+                colorClass = 'bg-yellow-50 border-yellow-500 text-yellow-800';
+            } else {
+                message = 'Keep learning! Go through the training materials again.';
+                colorClass = 'bg-red-50 border-red-500 text-red-800';
+            }
+            
+            resultsDiv.innerHTML = `
+                <div class="border-l-4 ${colorClass} p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-2">Quiz Results</h3>
+                    <p class="text-2xl font-bold mb-2">Score: ${score} / ${total} (${percentage}%)</p>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Show equipment detail modal
+        function showEquipmentDetail(equipmentName) {
+            const equipment = equipmentData[equipmentName];
+            if (!equipment) return;
+            
+            const modal = document.getElementById('equipment-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+            
+            title.textContent = equipmentName;
+            
+            let html = '';
+            
+            // Equipment specifications
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">`;
+            html += `<div class="bg-gray-50 rounded-lg p-6">`;
+            html += `<h4 class="font-semibold text-gray-900 mb-4 flex items-center">`;
+            html += `<i class="fas fa-info-circle text-blue-600 mr-2"></i>Specifications</h4>`;
+            html += `<div class="space-y-2 text-sm">`;
+            
+            if (equipment.model) html += `<div class="flex justify-between"><span class="text-gray-600">Model:</span><strong>${equipment.model}</strong></div>`;
+            if (equipment.ports) html += `<div class="flex justify-between"><span class="text-gray-600">Ports:</span><strong>${equipment.ports}</strong></div>`;
+            if (equipment.outlets) html += `<div class="flex justify-between"><span class="text-gray-600">Outlets:</span><strong>${equipment.outlets}</strong></div>`;
+            if (equipment.uplinks) html += `<div class="flex justify-between"><span class="text-gray-600">Uplink Ports:</span><strong>${equipment.uplinks} x SFP+</strong></div>`;
+            if (equipment.power) html += `<div class="flex justify-between"><span class="text-gray-600">Power:</span><strong>${equipment.power}</strong></div>`;
+            if (equipment.poe) html += `<div class="flex justify-between"><span class="text-gray-600">PoE Support:</span><strong>${equipment.poe}</strong></div>`;
+            if (equipment.category) html += `<div class="flex justify-between"><span class="text-gray-600">Category:</span><strong>${equipment.category}</strong></div>`;
+            if (equipment.monitoring) html += `<div class="flex justify-between"><span class="text-gray-600">Monitoring:</span><strong>${equipment.monitoring}</strong></div>`;
+            
+            html += `</div></div>`;
+            
+            // Connection summary
+            html += `<div class="bg-blue-50 rounded-lg p-6">`;
+            html += `<h4 class="font-semibold text-gray-900 mb-4 flex items-center">`;
+            html += `<i class="fas fa-plug text-blue-600 mr-2"></i>Connection Summary</h4>`;
+            html += `<div class="space-y-2 text-sm">`;
+            
+            const totalConnections = equipment.connections.length;
+            const inUse = equipment.connections.filter(c => c.type === 'in-use').length;
+            const reserved = equipment.connections.filter(c => c.type === 'reserved').length;
+            const uplinks = equipment.connections.filter(c => c.type === 'uplink').length;
+            
+            html += `<div class="flex justify-between"><span class="text-gray-600">Total Connections:</span><strong>${totalConnections}</strong></div>`;
+            html += `<div class="flex justify-between"><span class="text-gray-600">In Use:</span><strong class="text-red-600">${inUse}</strong></div>`;
+            html += `<div class="flex justify-between"><span class="text-gray-600">Reserved:</span><strong class="text-orange-600">${reserved}</strong></div>`;
+            if (uplinks > 0) html += `<div class="flex justify-between"><span class="text-gray-600">Uplinks:</span><strong class="text-purple-600">${uplinks}</strong></div>`;
+            
+            html += `</div></div>`;
+            html += `</div>`;
+            
+            // Port/Connection diagram
+            html += `<div class="mb-8">`;
+            html += `<h4 class="font-semibold text-gray-900 mb-4 flex items-center text-lg">`;
+            html += `<i class="fas fa-sitemap text-blue-600 mr-2"></i>`;
+            html += equipment.type === 'patch' ? 'Port Connections' : 'Port Layout & Connections';
+            html += `</h4>`;
+            
+            if (equipment.type === 'switch') {
+                // Visual switch port layout
+                html += `<div class="bg-gray-800 rounded-lg p-6">`;
+                html += `<div class="text-white text-center mb-4 font-semibold">${equipmentName} - Front Panel</div>`;
+                
+                // Create visual port representation
+                html += `<div class="grid grid-cols-12 gap-1 mb-4">`;
+                for (let i = 1; i <= equipment.ports; i++) {
+                    const conn = equipment.connections.find(c => c.port === i);
+                    let portClass = 'bg-gray-600';
+                    let tooltip = `Port ${i}: Available`;
+                    
+                    if (conn) {
+                        if (conn.type === 'in-use') {
+                            portClass = 'bg-red-500';
+                            tooltip = `Port ${i}: ${conn.device}`;
+                        } else if (conn.type === 'reserved') {
+                            portClass = 'bg-orange-500';
+                            tooltip = `Port ${i}: ${conn.device}`;
+                        } else if (conn.type === 'uplink') {
+                            portClass = 'bg-purple-500';
+                            tooltip = `Port ${i}: ${conn.device}`;
+                        }
+                    }
+                    
+                    html += `<div class="${portClass} h-8 rounded flex items-center justify-center text-white text-xs cursor-pointer hover:opacity-80" title="${tooltip}">${i}</div>`;
+                }
+                html += `</div>`;
+                
+                // Uplink ports
+                if (equipment.uplinks) {
+                    html += `<div class="border-t border-gray-600 pt-4">`;
+                    html += `<div class="text-white text-sm mb-2">SFP+ Uplink Ports</div>`;
+                    html += `<div class="grid grid-cols-4 gap-2">`;
+                    for (let i = equipment.ports - equipment.uplinks + 1; i <= equipment.ports; i++) {
+                        const conn = equipment.connections.find(c => c.port === i);
+                        let portClass = 'bg-gray-600';
+                        let label = `SFP ${i}`;
+                        
+                        if (conn) {
+                            portClass = conn.type === 'uplink' ? 'bg-purple-500' : 'bg-orange-500';
+                            label = conn.device;
+                        }
+                        
+                        html += `<div class="${portClass} h-12 rounded flex items-center justify-center text-white text-xs p-2 text-center">${label}</div>`;
+                    }
+                    html += `</div></div>`;
+                }
+                
+                html += `</div>`;
+            }
+            
+            // Detailed connection table
+            html += `<div class="mt-6 overflow-x-auto">`;
+            html += `<table class="min-w-full bg-white border rounded-lg">`;
+            html += `<thead class="bg-gray-100">`;
+            html += `<tr>`;
+            
+            // Dynamic header based on equipment type
+            const portLabel = equipment.type === 'pdu' ? 'Outlet' : 'Port';
+            html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">${portLabel}</th>`;
+            html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Connected Device</th>`;
+            html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Cable Type</th>`;
+            html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>`;
+            if (equipment.connections[0]?.vlan) {
+                html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VLAN</th>`;
+            }
+            if (equipment.connections[0]?.destination) {
+                html += `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Destination</th>`;
+            }
+            html += `</tr>`;
+            html += `</thead>`;
+            html += `<tbody class="divide-y divide-gray-200">`;
+            
+            equipment.connections.forEach(conn => {
+                let statusBadge = '';
+                if (conn.type === 'in-use') {
+                    statusBadge = '<span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">In Use</span>';
+                } else if (conn.type === 'reserved') {
+                    statusBadge = '<span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">Reserved</span>';
+                } else if (conn.type === 'uplink') {
+                    statusBadge = '<span class="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">Uplink</span>';
+                }
+                
+                const portValue = conn.port || conn.outlet;
+                
+                html += `<tr class="hover:bg-gray-50">`;
+                html += `<td class="px-4 py-3 text-sm font-medium text-gray-900">${portValue}</td>`;
+                html += `<td class="px-4 py-3 text-sm text-gray-600">${conn.device}</td>`;
+                html += `<td class="px-4 py-3 text-sm text-gray-600">${conn.cable}</td>`;
+                html += `<td class="px-4 py-3 text-sm">${statusBadge}</td>`;
+                if (conn.vlan) {
+                    html += `<td class="px-4 py-3 text-sm text-gray-600">${conn.vlan}</td>`;
+                }
+                if (conn.destination) {
+                    html += `<td class="px-4 py-3 text-sm text-gray-600">${conn.destination}</td>`;
+                }
+                html += `</tr>`;
+            });
+            
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+            html += `</div>`;
+            
+            // Wiring diagram
+            if (equipment.type === 'switch' || equipment.type === 'patch') {
+                html += `<div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6">`;
+                html += `<h4 class="font-semibold text-gray-900 mb-4 flex items-center text-lg">`;
+                html += `<i class="fas fa-project-diagram text-blue-600 mr-2"></i>Wiring Diagram</h4>`;
+                
+                html += `<svg width="100%" height="400" viewBox="0 0 800 400" class="bg-white rounded-lg border">`;
+                
+                // Draw the equipment
+                html += `<rect x="350" y="20" width="100" height="60" fill="#3b82f6" stroke="#1e40af" stroke-width="2" rx="5"/>`;
+                html += `<text x="400" y="55" text-anchor="middle" fill="white" font-size="12" font-weight="bold">${equipmentName}</text>`;
+                
+                // Draw connections
+                const displayConnections = equipment.connections.slice(0, 8); // Show first 8 for clarity
+                displayConnections.forEach((conn, idx) => {
+                    const y = 120 + (idx * 35);
+                    const color = conn.type === 'uplink' ? '#8b5cf6' : conn.type === 'reserved' ? '#f59e0b' : '#10b981';
+                    
+                    // Connection line
+                    html += `<line x1="400" y1="80" x2="400" y2="${y}" stroke="${color}" stroke-width="2"/>`;
+                    html += `<line x1="400" y1="${y}" x2="600" y2="${y}" stroke="${color}" stroke-width="2"/>`;
+                    
+                    // Device box
+                    html += `<rect x="600" y="${y-15}" width="180" height="30" fill="${color}" stroke="#374151" stroke-width="1" rx="3"/>`;
+                    html += `<text x="690" y="${y+5}" text-anchor="middle" fill="white" font-size="11">${conn.device.substring(0, 25)}</text>`;
+                    
+                    // Port label
+                    html += `<circle cx="400" cy="${y}" r="8" fill="${color}" stroke="white" stroke-width="2"/>`;
+                    html += `<text x="420" y="${y+4}" fill="#374151" font-size="10">${conn.port}</text>`;
+                });
+                
+                if (equipment.connections.length > 8) {
+                    html += `<text x="400" y="380" text-anchor="middle" fill="#6b7280" font-size="12">... and ${equipment.connections.length - 8} more connections</text>`;
+                }
+                
+                html += `</svg>`;
+                html += `</div>`;
+            }
+            
+            content.innerHTML = html;
+            modal.classList.remove('hidden');
+        }
+        
+        function closeEquipmentModal(event) {
+            if (!event || event.target.id === 'equipment-modal') {
+                document.getElementById('equipment-modal').classList.add('hidden');
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeRack();
+            initializePorts();
+        });
+    </script>
+</body>
+</html>
